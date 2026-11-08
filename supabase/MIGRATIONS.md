@@ -13,9 +13,20 @@ The bootstrap does not create Supabase Auth users or configure login providers.
 Configure the site's URL and redirect URLs in Supabase Auth, then create an
 account through PLENO. `supabase-sync.sql` adds the fixture synchronization
 policy used by the app's prediction lifecycle; apply it after the bootstrap.
+If PLENO reports `permission denied for table league_matches`, re-run the
+complete `supabase-sync.sql` in the Supabase SQL Editor. It removes the
+bootstrap prediction policies that directly queried the private fixture table
+and replaces them with permission-safe policies.
 Run `supabase-delete-league.sql` after the bootstrap to enable league ownership,
 leaving, and deletion. The other scripts are feature migrations, not bootstrap
 files; some require tables or RPCs created by other feature scripts.
+
+For the league scoreboard, apply `supabase-minigames.sql` first, then run the
+complete `supabase-score-settlement.sql` in the Supabase SQL Editor. The latter
+installs `get_league_scoreboards` and depends on the fixture, prediction,
+inventory, and minigame tables. If the app reports that the function is missing
+from the schema cache, apply the migration and use the page's **Reintentar**
+button.
 
 Daily games additionally require `supabase-daily-games.sql`, a reviewed catalog
 uploaded to the private `puzzle-catalog` Storage bucket, and the GitHub Actions
