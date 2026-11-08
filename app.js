@@ -691,7 +691,7 @@ async function syncLeagueData(leagueId, userId) {
 }
 async function loadCloudLeague(preferredLeagueId = null) {
   const loadMemberships = (includeOwner) => AUTH.client.from("league_members")
-    .select(`league_id,display_name,leagues!inner(id,name,invite_code${includeOwner ? ",owner_id" : ""})`)
+    .select(`league_id,display_name,leagues!league_members_league_id_fkey!inner(id,name,invite_code${includeOwner ? ",owner_id" : ""})`)
     .eq("user_id", AUTH.session.user.id)
     .order("joined_at", { ascending: true });
   LEAGUES.warning = "";
