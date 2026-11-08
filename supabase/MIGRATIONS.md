@@ -1,10 +1,31 @@
 # Supabase SQL workflow
 
+## New project
+
+Run `supabase-bootstrap.sql` first in the Supabase SQL Editor. It creates the
+foundational league, membership, fixture, and prediction tables plus the
+authenticated league RPCs and row-level security policies. It is not a complete
+installation of every PLENO feature. Apply only the incremental scripts for
+features you enable, after checking their dependencies below and in each file.
+Never paste every SQL file into one query.
+
+The bootstrap does not create Supabase Auth users or configure login providers.
+Configure the site's URL and redirect URLs in Supabase Auth, then create an
+account through PLENO. `supabase-sync.sql` adds the fixture synchronization
+policy used by the app's prediction lifecycle; apply it after the bootstrap.
+Run `supabase-delete-league.sql` after the bootstrap to enable league ownership,
+leaving, and deletion. The other scripts are feature migrations, not bootstrap
+files; some require tables or RPCs created by other feature scripts.
+
+Daily games additionally require `supabase-daily-games.sql`, a reviewed catalog
+uploaded to the private `puzzle-catalog` Storage bucket, and the GitHub Actions
+secrets described below. An empty catalog intentionally publishes no puzzles.
+
 The root `supabase-*.sql` files are incremental feature scripts, not a complete
 database bootstrap. They depend on core tables such as `leagues`,
 `league_members`, and `predictions`, which are not created by this repository.
-Do not run every file against a new or production project as one unreviewed
-batch.
+The bootstrap above supplies those core tables for new projects. Do not run
+every file against a new or production project as one unreviewed batch.
 
 For the age-confirmation change, run `supabase-age-consent.sql` in the Supabase
 SQL Editor. It is idempotent and can be re-run safely. It creates or updates
