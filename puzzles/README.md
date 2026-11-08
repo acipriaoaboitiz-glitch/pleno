@@ -1,19 +1,16 @@
-# Daily puzzle catalog
+# Daily football puzzles
 
-The reviewed source catalog is stored as `catalog.json` in the private Supabase
-Storage bucket `puzzle-catalog`. `catalog.example.json` documents its shape but is
-not production content. Do not commit the real catalog: it contains candidate
-answers. Empty arrays intentionally make production generation fail rather than
-publish invented football facts.
+The scheduled workflow builds its candidate catalog from Wikidata's public
+SPARQL endpoint and publishes a 60-day reserve directly to Supabase. It does
+not require a hand-uploaded `catalog.json`; `catalog.example.json` is only a
+schema example and must not be used as production data.
 
-Use Wikidata entity IDs (`Q...`) as answer identities and source references.
-Wikidata data is CC0. Keep source IDs for every fact used to author a puzzle.
-Use football-data.org only for current LaLiga squad data and follow its current
-attribution and API terms. Do not add copied biographies, photos, or scraped data.
-Catalog names must be unique (case-insensitive), every answer entity must exist
-in the entity list, and a person must review puzzle wording and source facts
-before upload. Automated checks cannot determine whether a football claim is
-factually correct or whether wording is offensive.
+Wikidata entity IDs (`Q...`) are used as answer identities and source
+references. Wikidata data is CC0. The generator uses player-to-club
+membership records for LaLiga clubs and complete player attributes, then
+validates puzzle structure and uniqueness before publishing. Wikidata is community-maintained, so
+automated checks cannot independently verify every underlying claim or judge
+wording. The workflow does not use copied biographies, photos, or scraped prose.
 The top-level `entities` array contains `{id, name, attributes}` records used
 to display answer choices and compare verified player attributes. Names and
 attributes are stored privately; clients receive display names only, while a
@@ -35,29 +32,22 @@ each cell must have 3–60 verified answers. Player candidates use a QID as
 `solution.player` and provide `club`, `country`, `position`, `age`,
 `shirt_number`, and `height_cm` in `public.player`.
 
-The weekly difficulty scale is Monday 1 through Sunday 7. A candidate must
-match the date's level exactly. Default anti-repetition windows are 45 days for
-Connections, 60 for Grid, and 90 for players. If a candidate can only be used
-by reducing that window, the generator reduces it in 15-day steps (never below
-30), writes the prior date and actual window to `private.daily_game_repeat_events`,
-and emits a warning in the GitHub Actions log. If no eligible candidate remains,
-generation fails visibly; it never repeats silently.
+The weekly difficulty scale is Monday 1 through Sunday 7. A puzzle must match
+the date's level exactly. Players used in a game are not reused for 30 days;
+Connections and Grid may reuse players after that cooldown only in a different
+puzzle. A player target may recur after its cooldown only when the complete
+puzzle content is different; the content hash prevents exact duplicates. If no
+eligible combination remains, generation fails visibly instead of publishing a
+duplicate or inventing answers.
 
-Player QIDs are also tracked across the full published history, independently
-of the 90-day repetition window. The generator chooses an unused player whenever
-the catalog still has one; it warns when the complete player pool has been used
-and a player must be reused. GitHub Actions refreshes the 60-day reserve every
-six hours so transient scheduled-run failures can be retried automatically.
-
-The generator keeps answers in the private Supabase schema and reads the
-catalog from the non-public Storage bucket. The scheduled workflow requires
-repository secrets `PUZZLE_SEED_SECRET`, `SUPABASE_URL`, and
+The generator keeps answers in the private Supabase schema. The scheduled
+workflow requires repository secrets `PUZZLE_SEED_SECRET`, `SUPABASE_URL`, and
 `SUPABASE_SECRET_KEY`, plus the SQL migration `supabase-daily-games.sql` applied
-to the Supabase project and a curated catalog uploaded to that bucket. Reapply
-the migration after updating it so the schedule RPC returns the all-time player
-ledger. Create the private bucket by running the migration, then upload the
-reviewed JSON as `catalog.json` in Supabase Storage. The HMAC seed is never
-committed or sent to clients.
+to the Supabase project. The HMAC seed is never committed or sent to clients.
+GitHub Actions refreshes the 60-day reserve every six hours. This is continuous
+daily publication, not an infinite supply of unique footballers; if the source
+pool becomes insufficient or Wikidata is unavailable, the workflow fails
+visibly rather than inventing answers.
 
 The migration also provides a service-role-only emergency replacement RPC,
 `publish_daily_game_replacement`. It replaces only an already-published date,
@@ -72,7 +62,7 @@ Archived games remain playable but do not change streaks or league XP.
 Run the synthetic-only pipeline tests with:
 
 ```powershell
-node --test tests\daily-games.test.mjs
+node --test tests\daily-games.test.mjs tests\wikidata-puzzle-catalog.test.mjs
 ```
 
 The test fixtures are deliberately synthetic and are never publishable catalog

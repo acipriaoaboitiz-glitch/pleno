@@ -21,10 +21,10 @@ jobs:
         with:
           node-version: 22
       - name: Run puzzle and scoring tests
-        run: node --test tests/daily-games.test.mjs tests/scoring.test.cjs
-      - name: Validate and publish the 60-day reserve
+        run: node --test tests/daily-games.test.mjs tests/wikidata-puzzle-catalog.test.mjs tests/scoring.test.cjs
+      - name: Generate from Wikidata and publish the 60-day reserve
         env:
           PUZZLE_SEED_SECRET: ${{ secrets.PUZZLE_SEED_SECRET }}
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
           SUPABASE_SECRET_KEY: ${{ secrets.SUPABASE_SECRET_KEY }}
-        run: node tools/generate-puzzles.mjs
+        run: node tools/generate-wikidata-puzzles.mjs

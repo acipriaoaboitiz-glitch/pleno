@@ -28,9 +28,9 @@ inventory, and minigame tables. If the app reports that the function is missing
 from the schema cache, apply the migration and use the page's **Reintentar**
 button.
 
-Daily games additionally require `supabase-daily-games.sql`, a reviewed catalog
-uploaded to the private `puzzle-catalog` Storage bucket, and the GitHub Actions
-secrets described below. An empty catalog intentionally publishes no puzzles.
+Daily games additionally require `supabase-daily-games.sql` and the GitHub
+Actions secrets described below. The scheduled workflow builds its candidate
+catalog from Wikidata; no manual Storage upload is required.
 
 The root `supabase-*.sql` files are incremental feature scripts, not a complete
 database bootstrap. They depend on core tables such as `leagues`,

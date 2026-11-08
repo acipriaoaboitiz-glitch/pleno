@@ -1,7 +1,7 @@
 import { createHash, createHmac } from "node:crypto";
 
 export const GAMES = ["connections", "grid", "player"];
-export const REPEAT_DAYS = { connections: 45, grid: 60, player: 90 };
+export const REPEAT_DAYS = { connections: 30, grid: 30, player: 30 };
 const COLORS = new Set(["yellow", "green", "blue", "purple"]);
 const PLAYER_FIELDS = ["club", "country", "position", "age", "shirt_number", "height_cm"];
 
@@ -17,9 +17,9 @@ function entityId(value) {
   return typeof value === "string" && /^Q\d+$/.test(value);
 }
 
-export function validateCatalog(catalog) {
+export function validateCatalog(catalog, { requireCandidates = true } = {}) {
   assert(catalog && typeof catalog === "object", "El catálogo debe ser un objeto.");
-  assert(Array.isArray(catalog.entities) && catalog.entities.length > 0,
+  assert(Array.isArray(catalog.entities) && (!requireCandidates || catalog.entities.length > 0),
     "El catálogo necesita entidades verificadas.");
   const ids = catalog.entities.map((entity) => entity?.id);
   const names = catalog.entities.map((entity) =>
@@ -34,7 +34,7 @@ export function validateCatalog(catalog) {
   ), "Los atributos de cada entidad deben ser un objeto.");
   const entitySet = new Set(ids);
   for (const game of GAMES) {
-    assert(Array.isArray(catalog[game]) && catalog[game].length > 0,
+    assert(Array.isArray(catalog[game]) && (!requireCandidates || catalog[game].length > 0),
       `El catálogo no contiene candidatos para ${game}.`);
     for (const candidate of catalog[game]) {
       const referenced = game === "connections"
@@ -212,10 +212,10 @@ export function preparePuzzle(game, candidate, date, secret) {
   };
 }
 
-export function buildSchedule(catalog, startDate, days, secret, existing = {}) {
+export function buildSchedule(catalog, startDate, days, secret, existing = {}, options = {}) {
   assert(typeof secret === "string" && secret.length >= 32, "PUZZLE_SEED_SECRET debe tener al menos 32 caracteres.");
   assert(Number.isInteger(days) && days > 0 && days <= 60, "El calendario debe tener entre 1 y 60 días.");
-  validateCatalog(catalog);
+  validateCatalog(catalog, options);
   const dates = Array.from({ length: days }, (_, index) => {
     const date = new Date(`${startDate}T12:00:00Z`);
     date.setUTCDate(date.getUTCDate() + index);
@@ -255,7 +255,9 @@ export function buildSchedule(catalog, startDate, days, secret, existing = {}) {
         }
         continue;
       }
-      const candidates = catalog[game];
+      const candidates = catalog[game].filter((candidate) =>
+        !candidate.schedule_date || candidate.schedule_date === date
+      );
       assert(Array.isArray(candidates) && candidates.length > 0, `El catálogo no contiene candidatos para ${game}.`);
       assert(unique(candidates.map((candidate) => candidate.id)), `Hay identificadores duplicados en el catálogo de ${game}.`);
       const ordered = seededOrder(candidates, secret, date, game);

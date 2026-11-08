@@ -50,14 +50,14 @@ Juegos, por prioridad (nombres y diseño propios; inspirados en el estilo de fut
 
 Entrega primero 1, 2 y 3 muy pulidos y deja 4 a 6 preparados.
 
-**Regla de oro: cada día, jugadores distintos, y ninguno se repite hasta haber agotado todo el conjunto elegible.**
+**Regla de oro: no publicar el mismo puzzle dos veces.** Los jugadores pueden volver a aparecer en cualquier juego tras el cooldown de 30 días, siempre que el contenido completo del puzzle sea distinto. Si no hay combinación elegible, la publicación debe fallar visiblemente.
 
-- Construye un **pool de jugadores elegibles** desde Wikidata (CC0): jugadores con trayectoria verificable y notoriedad mínima (por ejemplo número de páginas en Wikipedia) y datos completos. Cuéntame cuántos entran: ese número es el tamaño del ciclo.
-- Programa los jugadores secretos con un **ciclo completo**: mezcla el pool una sola vez con una semilla determinista secreta (salt del servidor) y recorre esa permutación día a día. Un jugador solo vuelve a aparecer cuando se han usado todos los demás. Con un pool de 3.000 jugadores, no hay repetición en más de 8 años.
-- El mismo principio para clubes, grupos de Conexiones y casillas del Cruce 3x3: cooldown mínimo configurable (90 días jugadores secretos, 60 cuadrículas, 45 grupos) y **ledger anti-repetición** con el hash del contenido de cada puzzle publicado.
-- Si no hay combinaciones suficientes, el script avisa de forma visible y baja el cooldown de forma controlada. Nunca repite en silencio. Queda registrada cada repetición.
+- Construye puzzles automáticamente desde los datos públicos CC0 de Wikidata, usando jugadores vinculados a clubes de LaLiga y atributos disponibles. Informa cuántas entidades se obtuvieron en cada ejecución; la fuente es comunitaria y las afirmaciones no deben presentarse como verificadas independientemente.
+- Genera el calendario por fecha con una semilla secreta del servidor, mantiene una reserva de 60 días y consulta el historial publicado antes de elegir candidatos. No exige subir manualmente un catálogo.
+- Aplica un cooldown de 30 días a las identidades de jugadores en cada juego y un **ledger anti-repetición** con el hash del contenido de cada puzzle publicado.
+- Si no hay combinaciones elegibles, el script avisa de forma visible y falla; nunca inventa respuestas ni repite silenciosamente.
 - Cambio de día a las 00:00 en Europe/Madrid, igual para todos, probado con el cambio de hora de verano e invierno.
-- Los puzzles no se generan en el navegador: `tools/generate-puzzles.mjs` los genera por adelantado y los guarda por fecha. Un cron gratuito (GitHub Actions) mantiene siempre 60 días de reserva y falla de forma visible si quedan menos de 14.
+- Los puzzles no se generan en el navegador: `tools/generate-wikidata-puzzles.mjs` genera y publica el calendario con GitHub Actions cada seis horas. Si Wikidata o el conjunto de candidatos no permiten completar la reserva de 60 días, el flujo falla de forma visible.
 - Validación automática antes de publicar: solución única (Conexiones), entre 3 y 60 respuestas válidas por casilla (Cruce 3x3), sin ambigüedades ni duplicados, sin contenido ofensivo, dificultad medida con curva semanal (fácil el lunes, difícil el domingo).
 - Archivo de días anteriores sin romper la racha, **modo práctica** ilimitado con un pool aparte, parche de emergencia (archivo de sustituciones) y botón «Reportar error».
 - Las respuestas no viajan en claro al cliente: cada intento se valida contra un endpoint del servidor.
