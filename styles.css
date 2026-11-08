@@ -471,14 +471,20 @@ main.tab-content{width:min(100%,1480px);padding:clamp(16px,2.4vw,36px) clamp(12p
 .top .bar .top-actions>button:hover{border-color:color-mix(in srgb,var(--ac2) 20%,var(--ln))!important;background:color-mix(in srgb,var(--ac2) 9%,var(--s2))!important}
 .top .bar .top-actions>.auth-logout:hover{border-color:color-mix(in srgb,var(--bad) 32%,var(--ln))!important;background:color-mix(in srgb,var(--bad) 9%,var(--s2))!important}
 .top .bar .top-actions>button:focus-visible{outline:2px solid var(--ac2);outline-offset:1px}
+.top .bar .top-actions>.install-button{display:inline-flex;width:auto;min-width:82px;align-items:center;justify-content:center;gap:6px;padding:0 10px!important;border-color:color-mix(in srgb,var(--ac2) 28%,var(--ln))!important;border-radius:10px!important;color:var(--tx);font-size:10px;font-weight:800;white-space:nowrap}
+.top .bar .top-actions>.install-button[hidden]{display:none!important}
+.top .bar .top-actions>.install-button svg{width:15px;height:15px;flex:none;fill:none;stroke:var(--ac2);stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
 .top .bar .top-actions>.theme-button:after{right:5px;bottom:5px}
 @media(max-width:767px){
   .top .bar .top-actions{gap:2px;padding:3px}
   .top .bar .top-actions>button{width:42px;height:42px;min-width:42px;min-height:42px!important}
+  .top .bar .top-actions>.install-button{width:42px;min-width:42px;padding:0!important}
+  .top .bar .top-actions>.install-button .install-button-label{display:none}
 }
 @media(max-width:390px){
   .top .bar .top-actions{gap:1px;padding:2px}
   .top .bar .top-actions>button{width:34px;height:34px;min-width:34px;min-height:34px!important}
+  .top .bar .top-actions>.install-button{width:34px;min-width:34px}
 }
 .top .bar .brand-lockup{order:1}
 .top .bar .league-switcher{order:2;display:grid;flex:0 1 auto;grid-template-columns:minmax(0,1fr) 16px;grid-template-rows:auto auto;align-content:center;gap:2px 7px;width:auto;max-width:min(34vw,230px);min-width:0;min-height:38px;padding:5px 9px;border-color:transparent;border-left-color:var(--ln);border-radius:0 10px 10px 0;background:transparent;box-shadow:none;transition:background .16s}
