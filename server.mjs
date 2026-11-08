@@ -9,6 +9,7 @@ import { publishDailyChallenge } from "./scripts/publish-daily-challenge.mjs";
 const root = fileURLToPath(new URL(".", import.meta.url));
 const KEY = process.env.FOOTBALL_DATA_KEY;
 const SUPABASE_URL = process.env.SUPABASE_URL;
+const SUPABASE_PUBLISHABLE_KEY = process.env.SUPABASE_PUBLISHABLE_KEY;
 const SUPABASE_SECRET_KEY = process.env.SUPABASE_SECRET_KEY;
 const PORT = process.env.PORT || 3000;
 const ALLOWED = /^(competitions\/PD\/(standings|matches|teams|scorers)|teams\/\d+)$/;
@@ -97,6 +98,18 @@ async function syncMinuteOfGoldResults(matches) {
 http.createServer(async (req, res) => {
   const u = new URL(req.url, "http://localhost");
   if (u.pathname.startsWith("/api/")) {
+    if (u.pathname === "/api/config") {
+      if (req.method !== "GET") return send(res, 405, '{"message":"Método no permitido"}', { allow: "GET" });
+      if (!SUPABASE_URL || !SUPABASE_PUBLISHABLE_KEY) {
+        return send(res, 503, JSON.stringify({
+          message: "Falta configurar SUPABASE_URL y SUPABASE_PUBLISHABLE_KEY en las variables de entorno de Render."
+        }));
+      }
+      return send(res, 200, JSON.stringify({
+        supabaseUrl: SUPABASE_URL,
+        supabasePublishableKey: SUPABASE_PUBLISHABLE_KEY
+      }));
+    }
     if (u.pathname === "/api/daily-challenge/ensure") {
       if (req.method !== "POST") return send(res, 405, '{"message":"Método no permitido"}', { allow: "POST" });
       if (!KEY || !SUPABASE_URL || !SUPABASE_SECRET_KEY) {

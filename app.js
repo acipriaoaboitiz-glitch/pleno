@@ -11,8 +11,6 @@ const errorText = (error) => {
   }
   return String(error);
 };
-const SB_URL = "https://qynmrpgahxeeafublofs.supabase.co";
-const SB_KEY = "sb_publishable_It1kV2ryR-toeyDeA4WNyw_aXcPThkG";
 let S = { league: null, me: "", preds: {}, joker: {}, friends: {}, th: "carbon" };
 try { Object.assign(S, JSON.parse(localStorage.getItem("pleno"))); } catch {}
 const save = () => { try { localStorage.setItem("pleno", JSON.stringify(S)); } catch {} };
@@ -1031,8 +1029,14 @@ async function initializeAuth() {
     || new URLSearchParams(location.search).get("error")
     || callbackParams.get("error");
   try {
+    const configResponse = await fetch("/api/config", { cache: "no-store" });
+    const config = await configResponse.json();
+    if (!configResponse.ok) throw new Error(config.message || "Falta configurar la conexión con Supabase en Render.");
+    if (typeof config.supabaseUrl !== "string" || typeof config.supabasePublishableKey !== "string") {
+      throw new Error("La configuración pública de Supabase no es válida.");
+    }
     const { createClient } = await import("https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm");
-    AUTH.client = createClient(SB_URL, SB_KEY, {
+    AUTH.client = createClient(config.supabaseUrl, config.supabasePublishableKey, {
       auth: { autoRefreshToken: true, persistSession: true, detectSessionInUrl: true }
     });
     AUTH.client.auth.onAuthStateChange((event, session) => {
